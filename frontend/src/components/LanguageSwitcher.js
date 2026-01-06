@@ -1,23 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import './LanguageSwitcher.css';
 
-const languages = [
-  { code: 'english', name: 'English' },
-  { code: 'hindi', name: 'हिन्दी' },
-  { code: 'telugu', name: 'తెలుగు' },
-  { code: 'kannada', name: 'ಕನ್ನಡ' },
-  { code: 'tamil', name: 'தமிழ்' },
-  { code: 'malayalam', name: 'മലയാളം' },
-  { code: 'bengali', name: 'বাংলা' },
-  { code: 'marathi', name: 'मराठी' },
-  { code: 'gujarati', name: 'ગુજરાતી' },
-  { code: 'punjabi', name: 'ਪੰਜਾਬੀ' },
-  { code: 'odia', name: 'ଓଡ଼ିଆ' },
-];
-
 function LanguageSwitcher() {
   const { i18n } = useTranslation();
+  const [languages, setLanguages] = useState([]);
+
+  useEffect(() => {
+    const fetchLanguages = async () => {
+      try {
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiUrl}/api/v1/languages/`);
+        if (response.ok) {
+          const data = await response.json();
+          setLanguages(data);
+        } else {
+          console.error('Failed to fetch languages');
+        }
+      } catch (error) {
+        console.error('Error fetching languages:', error);
+      }
+    };
+
+    fetchLanguages();
+  }, []);
 
   const changeLanguage = (e) => {
     i18n.changeLanguage(e.target.value);

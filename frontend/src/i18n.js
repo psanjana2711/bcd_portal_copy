@@ -3,7 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Import all locale files
-const languages = ['english', 'hindi', 'telugu', 'kannada', 'tamil', 'malayalam', 'bengali', 'marathi', 'gujarati', 'punjabi', 'odia'];
+const languages = ['en', 'hi', 'te', 'kn', 'ta', 'ml', 'bn', 'mr', 'gu', 'pa', 'or'];
 const namespaces = ['consent', 'questionnaire', 'thankyou'];
 
 const resources = {};
@@ -24,7 +24,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'english',
+    fallbackLng: 'en',
     debug: false,
     interpolation: {
       escapeValue: false,

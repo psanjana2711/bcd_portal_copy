@@ -34,9 +34,43 @@ class LoginRequest(BaseModel):
 
 class HospitalBase(BaseModel):
     name: str
+    contact_person: str
+    email: EmailStr
+    address: Optional[str] = None
+
+class HospitalCreate(HospitalBase):
+    pass
 
 class HospitalResponse(HospitalBase):
     id: int
+
+    class Config:
+        from_attributes = True
+
+class LanguageResponse(BaseModel):
+    code: str
+    name: str
+
+    class Config:
+        from_attributes = True
+
+class QuestionOptionResponse(BaseModel):
+    id: int
+    option_value: str
+    option_label: str
+    sort_order: int
+
+    class Config:
+        from_attributes = True
+
+class QuestionResponse(BaseModel):
+    id: int
+    section: str
+    response_type: str
+    question_text: str
+    parent_question_id: Optional[int] = None
+    trigger_answer: Optional[str] = None
+    options: list[QuestionOptionResponse] = []
 
     class Config:
         from_attributes = True

@@ -18,4 +18,7 @@ class Settings:
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    GCP_STORAGE_BUCKET: str = os.getenv("GCP_STORAGE_BUCKET")
+    GOOGLE_APPLICATION_CREDENTIALS: str = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+
 settings = Settings()

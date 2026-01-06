@@ -7,7 +7,52 @@ import iiscLogo from '../assets/IISc_logo.png';
 
 function Consent({ onAccept }) {
   const [isChecked, setIsChecked] = useState(false);
+  const [scannedFile, setScannedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const { t } = useTranslation('consent');
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setScannedFile(e.target.files[0]);
+    }
+  };
+
+  const handleAccept = async () => {
+    if (!scannedFile) {
+      alert(t('uploadPrompt') || 'Please upload a scanned copy of the physical consent form.');
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', scannedFile);
+
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`${apiUrl}/api/v1/patient/consent`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        onAccept(result);
+      } else {
+        const errorData = await response.json();
+        alert(`Upload failed: ${errorData.detail || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error uploading consent:', error);
+      alert('An error occurred while uploading the consent form.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div className="consent-container">
@@ -39,6 +84,20 @@ function Consent({ onAccept }) {
         </div>
       ))}
 
+      <div className="consent-upload">
+        <label htmlFor="consent-file">
+          <strong>{t('uploadLabel') || 'Upload Scanned Consent (Image/PDF):'}</strong>
+        </label>
+        <input
+          type="file"
+          id="consent-file"
+          accept="image/*,application/pdf"
+          capture="environment"
+          onChange={handleFileChange}
+        />
+        {scannedFile && <p className="file-name">{scannedFile.name}</p>}
+      </div>
+
       <div className="consent-checkbox">
         <input
           type="checkbox"
@@ -49,8 +108,12 @@ function Consent({ onAccept }) {
         <label htmlFor="consent-check">{t('checkboxLabel')}</label>
       </div>
 
-      <button className="consent-button" onClick={onAccept} disabled={!isChecked}>
-        {t('buttonText')}
+      <button 
+        className="consent-button" 
+        onClick={handleAccept} 
+        disabled={!isChecked || !scannedFile || isUploading}
+      >
+        {isUploading ? (t('uploadingText') || 'Uploading...') : t('buttonText')}
       </button>
     </div>
   );

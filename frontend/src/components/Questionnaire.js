@@ -20,7 +20,7 @@ function Questionnaire({ onSubmit, isSubmitting }) {
   const questions = t('questions', { returnObjects: true });
 
   // Get English version for logic
-  const tEn = i18n.getFixedT('english', 'questionnaire');
+  const tEn = i18n.getFixedT('en', 'questionnaire');
   const questionsEn = tEn('questions', { returnObjects: true });
 
   useEffect(() => {

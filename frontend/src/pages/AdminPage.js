@@ -88,7 +88,7 @@ const AdminPage = () => {
       case 'doctor':
         return <div style={contentStyle}>Doctor View Content</div>;
       case 'admin':
-        return <div style={contentStyle}>Admin Content</div>;
+        return <div style={contentStyle}><AdminContent /></div>;
       default:
         return null;
     }
@@ -215,6 +215,402 @@ const contentStyle = {
   boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
   minHeight: '400px',
   color: '#666'
+};
+
+const AdminContent = () => {
+  const [expandedSection, setExpandedSection] = useState(null);
+  const [hospitals, setHospitals] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
+  // Forms states
+  const [doctorForm, setDoctorForm] = useState({ fullName: '', email: '', password: '', hospitalId: '' });
+  const [staffForm, setStaffForm] = useState({ fullName: '', email: '', password: '', hospitalId: '' });
+  const [hospitalForm, setHospitalForm] = useState({ name: '', contactPerson: '', email: '', address: '' });
+  const [adminForm, setAdminForm] = useState({ fullName: '', email: '', password: '', hospitalId: '' });
+
+  useEffect(() => {
+    fetchHospitals();
+    fetchRoles();
+  }, []);
+
+  const fetchHospitals = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/v1/auth/hospitals`);
+      const data = await response.json();
+      setHospitals(data);
+    } catch (err) {
+      console.error("Failed to fetch hospitals", err);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/v1/admin/roles`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      setRoles(data);
+    } catch (err) {
+      console.error("Failed to fetch roles", err);
+    }
+  };
+
+  const handleCreateUser = async (formData, roleName) => {
+    setLoading(true);
+    try {
+      const role = roles.find(r => r.name.toLowerCase() === roleName.toLowerCase());
+      if (!role) throw new Error(`Role ${roleName} not found`);
+      
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/v1/admin/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          full_name: formData.fullName,
+          hospital_id: parseInt(formData.hospitalId),
+          role_id: role.id
+        })
+      });
+      
+      if (response.ok) {
+        alert(`${roleName} account created successfully!`);
+        // Reset form
+        if (roleName === 'Doctor') setDoctorForm({ fullName: '', email: '', password: '', hospitalId: '' });
+        if (roleName === 'Staff') setStaffForm({ fullName: '', email: '', password: '', hospitalId: '' });
+        if (roleName === 'Admin') setAdminForm({ fullName: '', email: '', password: '', hospitalId: '' });
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.detail || 'Failed to create account'}`);
+      }
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateHospital = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL || ''}/api/v1/admin/hospitals`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: hospitalForm.name,
+          contact_person: hospitalForm.contactPerson,
+          email: hospitalForm.email,
+          address: hospitalForm.address
+        })
+      });
+      
+      if (response.ok) {
+        alert('Hospital account created successfully!');
+        setHospitalForm({ name: '', contactPerson: '', email: '', address: '' });
+        fetchHospitals(); // Refresh hospital list
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.detail || 'Failed to create hospital'}`);
+      }
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleSection = (section) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  const accordionStyle = {
+    marginBottom: '10px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    overflow: 'hidden'
+  };
+
+  const accordionHeaderStyle = {
+    padding: '15px',
+    backgroundColor: '#f8f9fa',
+    cursor: 'pointer',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    fontWeight: 'bold',
+    color: '#333'
+  };
+
+  const accordionContentStyle = {
+    padding: '20px',
+    borderTop: '1px solid #ddd',
+    backgroundColor: 'white'
+  };
+
+  const formGroupStyle = {
+    marginBottom: '15px'
+  };
+
+  const labelStyle = {
+    display: 'block',
+    marginBottom: '5px',
+    fontWeight: '500'
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '8px',
+    borderRadius: '4px',
+    border: '1px solid #ccc',
+    boxSizing: 'border-box'
+  };
+
+  const buttonStyle = {
+    padding: '10px 20px',
+    backgroundColor: '#8B008B',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    marginTop: '10px'
+  };
+
+  return (
+    <div style={{ color: '#333' }}>
+      <h2 style={{ marginBottom: '20px', color: '#8B008B' }}>Administrative Tasks</h2>
+      
+      {/* 1. Create Doctor Account */}
+      <div style={accordionStyle}>
+        <div style={accordionHeaderStyle} onClick={() => toggleSection('doctor')}>
+          1. Create a doctor account for the hospital
+          <span>{expandedSection === 'doctor' ? '−' : '+'}</span>
+        </div>
+        {expandedSection === 'doctor' && (
+          <div style={accordionContentStyle}>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Full Name</label>
+              <input 
+                style={inputStyle} 
+                value={doctorForm.fullName} 
+                onChange={(e) => setDoctorForm({...doctorForm, fullName: e.target.value})}
+              />
+            </div>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Email</label>
+              <input 
+                style={inputStyle} 
+                type="email" 
+                value={doctorForm.email}
+                onChange={(e) => setDoctorForm({...doctorForm, email: e.target.value})}
+              />
+            </div>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Password</label>
+              <input 
+                style={inputStyle} 
+                type="password" 
+                value={doctorForm.password}
+                onChange={(e) => setDoctorForm({...doctorForm, password: e.target.value})}
+              />
+            </div>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Hospital</label>
+              <select 
+                style={inputStyle} 
+                value={doctorForm.hospitalId}
+                onChange={(e) => setDoctorForm({...doctorForm, hospitalId: e.target.value})}
+              >
+                <option value="">Select Hospital</option>
+                {hospitals.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+              </select>
+            </div>
+            <button 
+              style={{...buttonStyle, opacity: loading ? 0.7 : 1}} 
+              disabled={loading}
+              onClick={() => handleCreateUser(doctorForm, 'Doctor')}
+            >
+              {loading ? 'Creating...' : 'Create Doctor Account'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 2. Create Staff Account */}
+      <div style={accordionStyle}>
+        <div style={accordionHeaderStyle} onClick={() => toggleSection('staff')}>
+          2. Create a staff account for the hospital
+          <span>{expandedSection === 'staff' ? '−' : '+'}</span>
+        </div>
+        {expandedSection === 'staff' && (
+          <div style={accordionContentStyle}>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Full Name</label>
+              <input 
+                style={inputStyle} 
+                value={staffForm.fullName}
+                onChange={(e) => setStaffForm({...staffForm, fullName: e.target.value})}
+              />
+            </div>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Email</label>
+              <input 
+                style={inputStyle} 
+                type="email" 
+                value={staffForm.email}
+                onChange={(e) => setStaffForm({...staffForm, email: e.target.value})}
+              />
+            </div>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Password</label>
+              <input 
+                style={inputStyle} 
+                type="password" 
+                value={staffForm.password}
+                onChange={(e) => setStaffForm({...staffForm, password: e.target.value})}
+              />
+            </div>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Hospital</label>
+              <select 
+                style={inputStyle} 
+                value={staffForm.hospitalId}
+                onChange={(e) => setStaffForm({...staffForm, hospitalId: e.target.value})}
+              >
+                <option value="">Select Hospital</option>
+                {hospitals.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+              </select>
+            </div>
+            <button 
+              style={{...buttonStyle, opacity: loading ? 0.7 : 1}} 
+              disabled={loading}
+              onClick={() => handleCreateUser(staffForm, 'Staff')}
+            >
+              {loading ? 'Creating...' : 'Create Staff Account'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 3. Create another hospital account */}
+      <div style={accordionStyle}>
+        <div style={accordionHeaderStyle} onClick={() => toggleSection('hospital')}>
+          3. Create another hospital account
+          <span>{expandedSection === 'hospital' ? '−' : '+'}</span>
+        </div>
+        {expandedSection === 'hospital' && (
+          <div style={accordionContentStyle}>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Hospital Name</label>
+              <input 
+                style={inputStyle} 
+                value={hospitalForm.name}
+                onChange={(e) => setHospitalForm({...hospitalForm, name: e.target.value})}
+              />
+            </div>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Contact Person</label>
+              <input 
+                style={inputStyle} 
+                value={hospitalForm.contactPerson}
+                onChange={(e) => setHospitalForm({...hospitalForm, contactPerson: e.target.value})}
+              />
+            </div>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Email</label>
+              <input 
+                style={inputStyle} 
+                type="email" 
+                value={hospitalForm.email}
+                onChange={(e) => setHospitalForm({...hospitalForm, email: e.target.value})}
+              />
+            </div>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Address</label>
+              <textarea 
+                style={{...inputStyle, height: '80px'}} 
+                value={hospitalForm.address}
+                onChange={(e) => setHospitalForm({...hospitalForm, address: e.target.value})}
+              />
+            </div>
+            <button 
+              style={{...buttonStyle, opacity: loading ? 0.7 : 1}} 
+              disabled={loading}
+              onClick={handleCreateHospital}
+            >
+              {loading ? 'Creating...' : 'Create Hospital Account'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 4. Create admin account for another hospital */}
+      <div style={accordionStyle}>
+        <div style={accordionHeaderStyle} onClick={() => toggleSection('admin-user')}>
+          4. Create admin account for another hospital
+          <span>{expandedSection === 'admin-user' ? '−' : '+'}</span>
+        </div>
+        {expandedSection === 'admin-user' && (
+          <div style={accordionContentStyle}>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Full Name</label>
+              <input 
+                style={inputStyle} 
+                value={adminForm.fullName}
+                onChange={(e) => setAdminForm({...adminForm, fullName: e.target.value})}
+              />
+            </div>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Email</label>
+              <input 
+                style={inputStyle} 
+                type="email" 
+                value={adminForm.email}
+                onChange={(e) => setAdminForm({...adminForm, email: e.target.value})}
+              />
+            </div>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Password</label>
+              <input 
+                style={inputStyle} 
+                type="password" 
+                value={adminForm.password}
+                onChange={(e) => setAdminForm({...adminForm, password: e.target.value})}
+              />
+            </div>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Hospital</label>
+              <select 
+                style={inputStyle} 
+                value={adminForm.hospitalId}
+                onChange={(e) => setAdminForm({...adminForm, hospitalId: e.target.value})}
+              >
+                <option value="">Select Hospital</option>
+                {hospitals.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+              </select>
+            </div>
+            <button 
+              style={{...buttonStyle, opacity: loading ? 0.7 : 1}} 
+              disabled={loading}
+              onClick={() => handleCreateUser(adminForm, 'Admin')}
+            >
+              {loading ? 'Creating...' : 'Create Admin Account'}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default AdminPage;
