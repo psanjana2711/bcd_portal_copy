@@ -77,8 +77,12 @@ The following variables are used by the frontend:
 ### Getting Started
 1. Clone the repository.
 2. Configure the `.env` file in the root directory with the necessary URLs and credentials.
-3. To start the frontend application, run the provided starter script from the root directory:
+3. To start the backend application, run the provided starter script from the root directory:
+   ```bash
+   ./be_starter.sh
+   ```
+4. To start the frontend application, run the provided starter script from the root directory:
    ```bash
    ./fe_starter.sh
    ```
-4. Follow the specific setup instructions in each module's directory (where available).
+5. Follow the specific setup instructions in each module's directory (where available).
