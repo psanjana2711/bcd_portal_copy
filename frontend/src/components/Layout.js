@@ -1,33 +1,34 @@
 import React from 'react';
 import tanuhLogo from '../assets/tanuh.png';
 import iiscLogo from '../assets/IISc_logo.png';
+import moeLogo from '../assets/MoE_Black.png';
 
 const Layout = ({ children, userRole, handleLogout, maxWidth = '1200px', padding = '20px' }) => {
   return (
     <div style={containerStyle}>
       <header style={headerStyle}>
-        <div style={{
-          ...logoContainerStyle,
-          maxWidth: maxWidth
-        }}>
-          <img src={tanuhLogo} alt="Tanuh Logo" style={logoStyle} />
-          <h1 style={titleStyle}>AI enabled Breast Cancer Screening Tool</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <button 
-              onClick={handleLogout}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#f8d7da',
-                color: '#721c24',
-                border: '1px solid #f5c6cb',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Logout
-            </button>
-            <img src={iiscLogo} alt="IISc Logo" style={logoStyle} />
+        <div
+          style={{
+            ...logoContainerStyle,
+            maxWidth: maxWidth
+          }}
+        >
+          <div style={logoGroupStyle}>
+            <img src={tanuhLogo} alt="Tanuh Logo" style={logoStyle} />
+            <img src={moeLogo} alt="MoE Logo" style={moeLogoStyle} />
           </div>
+          <h1 style={titleStyle}>AI enabled Breast Cancer Screening Tool</h1>
+          <img src={iiscLogo} alt="IISc Logo" style={logoStyle} />
+        </div>
+        <div
+          style={{
+            ...logoutRowStyle,
+            maxWidth: maxWidth
+          }}
+        >
+          <button onClick={handleLogout} style={logoutButtonStyle}>
+            Logout
+          </button>
         </div>
       </header>
 
@@ -72,12 +73,40 @@ const logoStyle = {
   objectFit: 'contain'
 };
 
+const moeLogoStyle = {
+  height: '130px',
+  width: '130px',
+  objectFit: 'contain'
+};
+
+const logoGroupStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px'
+};
+
 const titleStyle = {
   fontSize: '26px',
   fontWeight: '600',
   color: '#8B008B',
   textAlign: 'center',
   flex: '1'
+};
+
+const logoutRowStyle = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  margin: '10px auto 0',
+  width: '100%'
+};
+
+const logoutButtonStyle = {
+  padding: '8px 16px',
+  backgroundColor: '#f8d7da',
+  color: '#721c24',
+  border: '1px solid #f5c6cb',
+  borderRadius: '4px',
+  cursor: 'pointer'
 };
 
 const mainStyle = {
