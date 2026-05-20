@@ -60,7 +60,7 @@ const logoContainerStyle = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  maxWidth: '1200px',
+  maxWidth: '980px',
   margin: '0 auto',
   width: '100%',
   gap: '20px'
@@ -73,7 +73,7 @@ const logoStyle = {
 };
 
 const titleStyle = {
-  fontSize: '20px',
+  fontSize: '26px',
   fontWeight: '600',
   color: '#8B008B',
   textAlign: 'center',
