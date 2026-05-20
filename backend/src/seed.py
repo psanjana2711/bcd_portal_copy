@@ -1,12 +1,28 @@
 import sys
 import os
+# When running this file directly (not as a package), ensure the repository
+# root is on `sys.path` so absolute imports like `backend.src...` work.
+if __package__ is None:
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    if repo_root not in sys.path:
+        sys.path.insert(0, repo_root)
 from sqlalchemy.orm import Session
-from backend.src.db.session import SessionLocal, engine
+from backend.src.db import session as db_session
 from backend.src.models import models
 from backend.src.core.security import get_password_hash
+from sqlalchemy.exc import OperationalError
+from sqlalchemy import text
 
 def seed_data():
-    db = SessionLocal()
+    try:
+        db = db_session.SessionLocal()
+        # quick connectivity check
+        db.execute(text("SELECT 1"))
+    except Exception as e:
+        print("Could not connect to configured DB:", e)
+        print("Seeding requires a reachable database. Options:\n - configure a reachable MySQL in .env\n - run a local MySQL and point MYSQL_HOST to it\n - or run the script from the repo root with PYTHONPATH set")
+        print("Example: PYTHONPATH=$(pwd) python3 backend/src/seed.py")
+        return
     try:
         # 1. Create Hospital
         hospital = db.query(models.Hospital).filter(models.Hospital.name == "Test1").first()
