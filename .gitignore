@@ -25,3 +25,6 @@ yarn-error.log*
 
 # OS
 .DS_Store
+.venv311/
+.env
+db_service_account_access/

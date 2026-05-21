@@ -43,7 +43,7 @@ class HospitalCreate(HospitalBase):
     pass
 
 class HospitalResponse(HospitalBase):
-    id: int
+    id: str
 
     class Config:
         from_attributes = True

@@ -14,6 +14,13 @@ class Settings:
     MYSQL_DB: str = os.getenv("MYSQL_DB")
     DATABASE_URL: str = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
 
+    USE_SERVICE_ACCOUNT_DB: bool = os.getenv("USE_SERVICE_ACCOUNT_DB", "false").lower() in ("1", "true", "yes")
+    SA_KEY_FILE: str = os.getenv("SA_KEY_FILE", "gcp-service-account.json")
+    INSTANCE_CONN_NAME: str = os.getenv(
+        "INSTANCE_CONN_NAME",
+        "bcd-prototypes:asia-south1:tanuh-bcd-questionnaire-dev"
+    )
+
     SECRET_KEY: str = os.getenv("SECRET_KEY", "9a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b") # Should be in .env
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
